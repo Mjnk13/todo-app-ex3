@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { addUserToDb } from "../indexeddb/action";
-
+import { useDispatch, useSelector } from "react-redux";
+import { addUser } from "../app/userSlide";
 const SignUp = () => {
     interface user {
         fullname: string,
@@ -9,23 +10,31 @@ const SignUp = () => {
         password: string
     }
 
+    const dispatch = useDispatch();
+    const user = useSelector((state:any) => state.user);
+
     const [ userFullName, getUserFullName ] = useState ("");
     const [ userEmail, getUserEmail ] = useState ("");
     const [ userPassword, getUserPassword ] = useState ("");
     const [ userConfirmPassword, getUserConfirmPassword ] = useState ("");
-    // const [error, setError] = useState<String[]>([]);
+    const [error, setError] = useState<string[]>([]);
+
+    function validateUserSignUpForm(fullname_input: string, email_input:string, password_input:string, confirm_password_input:string):boolean {
+        if (fullname_input === "" || 
+            email_input === "" || 
+            password_input === "" || 
+            password_input !== confirm_password_input)
+            return false;
+        return true;
+    }
 
     const signUpFormSubmitHandler = (event:React.MouseEvent) => {
         event.preventDefault();
+        setError([]);
         
-        if (userFullName === "") {
-            console.log("please in put name");
-        } else if (userEmail === "") {
-            console.log("please in put email");
-        } else if (userPassword !== userConfirmPassword) {
-            // setError([... error, "Password Not Match"]);
-            console.log("password not match");
-        } else {
+        const isValid:boolean = validateUserSignUpForm(userFullName, userEmail, userPassword, userConfirmPassword);            
+
+        if(isValid) {
             console.log("add user");
             
             const User:user = {
@@ -34,6 +43,9 @@ const SignUp = () => {
                 password: userPassword
             }
             addUserToDb(User);
+            dispatch(addUser(User));
+        } else {
+            alert("Some thing is wrong, make sure you don't leave any empty field and the password must match with confirm password");
         }
     }
 
@@ -55,6 +67,7 @@ const SignUp = () => {
                         <input type="email" className="form-control ps-4" id="email-user-input-sign-up" placeholder="example@email.com" onChange={e => getUserEmail(e.target.value)}/>
                         <label htmlFor="email-user-input-sign-up" className="w-100"><i className="fa-solid fa-envelope mx-3"></i>Enter Your Email</label>
                     </div>
+                    
 
                     <h5 className="text-start ms-3">Password:</h5>
                     <div className="form-floating mb-3">
@@ -67,9 +80,6 @@ const SignUp = () => {
                         <input type="password" className="form-control ps-4" id="confirm-password-user-input-sign-up" placeholder="confirm password" onChange={e => getUserConfirmPassword(e.target.value)}/>
                         <label htmlFor="confirm-password-user-input-sign-up" className="w-100"><i className="fa-solid fa-lock mx-3"></i>Confirm Password</label>
                     </div>
-                    {/* {error.some(item => item === "Password Not Match") && <div id="validationServerUsernameFeedback" className="invalid-feedback">
-                                                                                The confirm password not match.
-                                                                            </div>} */}
 
                     <button form="sign-up-form" className="btn custom-btn-1 w-100 py-3 mt-3" onClick={(e:React.MouseEvent) => signUpFormSubmitHandler(e)}>SignUp</button>
                     <p className="mt-3">Already have an Account ? <Link to="/sign-in/" style={{color: "#F700C4"}}>SignIn</Link></p>
