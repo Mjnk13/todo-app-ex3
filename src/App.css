@@ -11,10 +11,16 @@ form input {
 }
 
 .custom-btn-1 {
-  background-color: #f700c4;
+  background-color: #f700c4 !important;
   color: white !important;
 }
 
 .custom-btn-1:hover {
   background-color: #d417ae;
 }
+
+.custom-btn-1:active {
+  background-color: #ff73e2 !important;
+  border-color: transparent !important;
+}
+
