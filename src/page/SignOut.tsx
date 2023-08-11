@@ -10,13 +10,18 @@ const SignOut = () => {
     const navigate = useNavigate();
     const [ message, setMessage ] = useState("");
     const [ alertType, setAlertType ] = useState("");
+    const userLogged = JSON.parse(sessionStorage.getItem("user-login") as string);
 
     useEffect(()=>{
-        setUserSessionLogOut();
-        setAlertType("info");
-        setMessage("Sign out successfully ! Redirect to Start Page in few second");
-        dispatch(clearAuth());
-        setTimeout(() => { navigate("../")}, 3000);
+        if(userLogged.logIn) {        
+            setUserSessionLogOut();
+            setAlertType("info");
+            setMessage("Sign out successfully ! Redirect to Start Page in few second");
+            dispatch(clearAuth());
+            setTimeout(() => { navigate("../") }, 3000);
+        } else {
+            navigate("../");
+        }
     },[]);
 
     return ( 

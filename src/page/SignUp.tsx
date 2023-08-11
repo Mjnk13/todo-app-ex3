@@ -1,21 +1,22 @@
 import { Link, useNavigate, Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { addUserToDb } from "../indexeddb/dbActions";
-import { useAutUserSelector, useAuthUserDispatch } from "../app/hook";
+import { addUserToDb } from "../indexeddb/dbUserActions";
+import { useSelector, useDispatch } from "react-redux";
 import { setUserSessionLogin } from "../sessionStorage/sessionStorageAction";
 import Alert from "./component/Alert";
 import { setSignUpProcessDone, setStatus } from "../app/authSlice";
 
 const SignUp = () => {
     interface authUser {
+        userId?: number,
         fullname: string,
         email: string,
-        password: string,
+        password: string
     }
 
-    const dispatch = useAuthUserDispatch();
+    const dispatch = useDispatch();
     const navigate = useNavigate();
-    const auth = useAutUserSelector((state:any) => state.auth);
+    const auth = useSelector((state:any) => state.auth);
     
     const [ userFullName, getUserFullName ] = useState ("");
     const [ userEmail, getUserEmail ] = useState ("");
@@ -48,7 +49,8 @@ const SignUp = () => {
         } else if(auth.status === "success"){
             setAlert(<Alert type="success" message="Sign up success, navigate to dashboard in few second"/>);
             setButtonSignUpContent(<i className="fa-solid fa-circle-check fs-1" style={{color: "green"}}></i>);
-            setUserSessionLogin(auth.fullname, auth.email);
+            
+            setUserSessionLogin(auth.id, auth.fullname, auth.email);
             setIsNavigate(true);
         } else if (auth.status === "error") {            
             setAlert(<Alert type="danger" message="Sign up fail, email already existed"/>);
@@ -91,6 +93,7 @@ const SignUp = () => {
             }
             
             setAlert(<Alert type="warning" message="Loading"/>);
+            setIsButtonSignUpDisable(true);
             dispatch(addUserToDb(User) as any);
         } else {
             setButtonSignUpContent(<>SignUp</>);

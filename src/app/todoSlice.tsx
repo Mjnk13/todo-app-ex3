@@ -1,7 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { addTodoTask } from "../indexeddb/dbTodoActions";
 
 interface todoTask {
-    userMail: string
+    userId: number,
     content: string,
     done: boolean 
 }
@@ -15,7 +16,9 @@ export const todoSlice = createSlice({
         
     },
     extraReducers: (builder) =>{
-        
+        builder.addCase(addTodoTask.fulfilled, (state, action) => {
+            state.push(action.payload.todoTask);
+        })
     }
 });
 

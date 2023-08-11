@@ -1,7 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { addUserToDb, userLoginValidate } from "../indexeddb/dbActions";
+import { addUserToDb, userLoginValidate } from "../indexeddb/dbUserActions";
 
 interface authUser {
+    id?: number
     fullname: string,
     email: string,
     password: string,
@@ -33,6 +34,7 @@ export const authSlice = createSlice({
             state.signInProcessDone = action.payload;
         },
         clearAuth(state){
+            state.id = -1;
             state.fullname = "";
             state.email = "";
             state.password = "";
@@ -47,6 +49,7 @@ export const authSlice = createSlice({
             state.status = 'loading';
         })
         .addCase(addUserToDb.fulfilled, (state, action) => {
+            state.id = action.payload['user'].userId;
             state.fullname = action.payload['user'].fullname;
             state.email = action.payload['user'].email;
             state.password = action.payload['user'].password;
@@ -61,6 +64,7 @@ export const authSlice = createSlice({
             state.status = 'loading';
         })
         .addCase(userLoginValidate.fulfilled, (state, action) => {
+            state.id = action.payload['user'].userId;
             state.fullname = action.payload['user'].fullname;
             state.email = action.payload['user'].email;
             state.password = action.payload['user'].password;

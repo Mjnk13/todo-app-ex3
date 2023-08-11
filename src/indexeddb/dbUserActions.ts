@@ -8,24 +8,11 @@ interface authUser {
     password: string
 }
 interface authUserExtend extends authUser {
-    fullname: string
+    fullname: string,
+    userId?: number
 }
 
-// export function getUserById <T>(id: number) {
-//     return new Promise<T>((resolve, reject) => {
-//         db().then((result => {
-//             IDB = result as IDBDatabase ;
-//             const txn = IDB.transaction('trips', 'readonly');
-//             const store = txn.objectStore('trips');
-//             let query = store.get(id);
-//             query.onerror = () => reject(query.error);
-//             query.onsuccess = () => resolve(query.result);
-//             txn.oncomplete = () => IDB.close();
-//         }));
-//     });
-// }
-
-export const userLoginValidate = createAsyncThunk('user/login-validate', async ( user:authUser, ) => {
+export const userLoginValidate = createAsyncThunk('user/login-validate', async ( user:authUser ) => {
     return new Promise<{result: boolean, user: authUserExtend}>((resolve, reject) => {
         db().then((result) => {
             IDB = result as IDBDatabase ;
@@ -36,8 +23,18 @@ export const userLoginValidate = createAsyncThunk('user/login-validate', async (
             let query = indexMail.get(user.email);
 
             query.onerror = () => reject({result: false, user: user});
-            query.onsuccess = () => {
-                if (query.result.password === user.password) resolve({result: true, user: query.result});
+            query.onsuccess = (e) => {
+                console.log(e.target);
+                
+                if (query.result.password === user.password) {
+                    let queryKey = indexMail.getKey(user.email);
+                    queryKey.onerror = () => reject({result: false, user: user});
+                    queryKey.onsuccess = () => {
+                        let queryResult = query.result;
+                        queryResult.userId = queryKey.result;
+                        resolve({result: true, user: queryResult});
+                    }
+                }
                 else reject({result: false, user: user});
             };
 
@@ -56,7 +53,12 @@ export const addUserToDb = createAsyncThunk('user/add', async(user:authUserExten
             const store = txn.objectStore('users');
             let query = store.put(user);
             
-            query.onsuccess = () => { resolve({result: true, user: user});  }
+            query.onsuccess = (e) => { 
+                const target:any = e.target;
+                user.userId = target.result;
+                resolve({result: true, user: user});
+            }
+
             query.onerror = () => { reject({result: false, user: user}) }
             txn.oncomplete = () => IDB.close();
         }).catch((error) => {
@@ -64,3 +66,4 @@ export const addUserToDb = createAsyncThunk('user/add', async(user:authUserExten
         });
     });
 });
+

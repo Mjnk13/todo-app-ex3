@@ -34,6 +34,10 @@ input:-internal-autofill-previewed {
   border-color: transparent !important;
 }
 
+.dashboard .modal-header, .dashboard .modal-footer {
+  border: none;
+}
+
 .user-welcome-background {
   background-color: #ecd3d5;
   position: absolute;
@@ -68,6 +72,12 @@ input:-internal-autofill-previewed {
   border-color: #F700C4;
 }
 
+@media (min-width: 576px) {
+  .dashboard .modal-dialog {
+    width: 50%;
+  }
+}
+
 @media (min-width: 768px) {
   .user-welcome-background {
     height: 50vh;
@@ -75,6 +85,10 @@ input:-internal-autofill-previewed {
 
   .App {
     padding: 10% 15% 0%;
+  }
+
+  .dashboard .modal-dialog {
+    width: 40%;
   }
 }
 
@@ -95,5 +109,9 @@ input:-internal-autofill-previewed {
 
   .App {
     padding: 10% 25% 0%;
+  }
+
+  .dashboard .modal-dialog {
+    width: 30%;
   }
 }

@@ -1,9 +1,14 @@
 export default function db () {
-    const keys = {
-      user: [{name: "fullname", unique: false},
-            {name: "email", unique: true},
-            {name: "password", unique: false}
-          ]
+  const keys = {
+    user: [{name: "fullname", unique: false},
+          {name: "email", unique: true},
+          {name: "password", unique: false}
+        ],
+    todoTask: [
+      {name: "userId", unique: false},
+      {name: "content", unique: false},
+      {name: "done", unique: false},
+    ]
   }
 
   let db: IDBDatabase;
@@ -24,7 +29,9 @@ export default function db () {
             request.onupgradeneeded = () => {
                 db = request.result;
                 let usersStore = db.createObjectStore('users', { autoIncrement: true });
+                let todoTasksStore = db.createObjectStore('todoTasks', { autoIncrement: true });
                 keys.user.forEach((key) => usersStore.createIndex(key.name, key.name, { unique: key.unique }));
+                keys.todoTask.forEach((key) => todoTasksStore.createIndex(key.name, key.name, { unique: key.unique }));
             };
         });
     };

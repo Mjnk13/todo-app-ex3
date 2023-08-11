@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAutUserSelector, useAuthUserDispatch } from "../app/hook";
-import { userLoginValidate } from "../indexeddb/dbActions";
+import { userLoginValidate } from "../indexeddb/dbUserActions";
 import Alert from "./component/Alert";
 import { setSignInProcessDone, setStatus } from "../app/authSlice";
 import { setUserSessionLogin } from "../sessionStorage/sessionStorageAction";
@@ -45,7 +45,7 @@ const SignIn = () => {
         } else if(auth.status === "success"){
             setAlert(<Alert type="success" message="Sign in success, navigate to dashboard in few second"/>);
             setButtonSignInContent(<i className="fa-solid fa-circle-check fs-1" style={{color: "green"}}></i>);
-            setUserSessionLogin(auth.fullname, auth.email);
+            setUserSessionLogin(auth.id, auth.fullname, auth.email);
             setIsNavigate(true);
         } else if (auth.status === "error") {            
             setAlert(<Alert type="danger" message="Sign in fail, email or password is not correct"/>);
@@ -75,6 +75,7 @@ const SignIn = () => {
 
         if(isValid) {
             setAlert(<Alert type="warning" message="Loading"/>);
+            setIsButtonSignInDisable(true);
             dispatch(userLoginValidate(user));
         } else {
             setButtonSignInContent(<>SignIn</>);
