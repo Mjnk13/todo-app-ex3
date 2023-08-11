@@ -1,25 +1,107 @@
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAutUserSelector, useAuthUserDispatch } from "../app/hook";
+import { userLoginValidate } from "../indexeddb/dbActions";
+import Alert from "./component/Alert";
+import { setSignInProcessDone, setStatus } from "../app/authSlice";
+import { setUserSessionLogin } from "../sessionStorage/sessionStorageAction";
 
 const SignIn = () => {
+    interface authUser {
+        email: string,
+        password: string
+    }
+
+    const dispatch = useAuthUserDispatch();
+    const navigate = useNavigate();
+    const auth = useAutUserSelector((state:any) => state.auth);
+    const userLogged = JSON.parse(sessionStorage.getItem("user-login") as string);
+
+    const [ userEmail, getUserEmail ] = useState ("");
+    const [ userPassword, getUserPassword ] = useState ("");
+    const [ isButtonSignInDisable, setIsButtonSignInDisable ] = useState(false);
+    const [ buttonSignInContent, setButtonSignInContent ] = useState (<>SignUp</>);
+    const [ alert, setAlert ] = useState(<></>);
+    const [ isNavigate, setIsNavigate ] = useState(false);
+
+    useEffect(()=> {
+        if(auth.signInProcessDone)
+            navigate("../logged-in-redirect");
+    }, []);
+
+    useEffect(() => {
+        if(isNavigate) {
+            setTimeout(() => { dispatch(setStatus("redirect")); }, 3000);
+        }
+    }, [isNavigate]);
+
+    useEffect(() => {
+        if ((userLogged.logIn && !auth.status)){
+            navigate("../logged-in-redirect");
+        } else if(auth.status === "redirect"){
+            navigate("../dash-board");
+            dispatch(setSignInProcessDone("done"));
+            dispatch(setStatus("finish"));
+        } else if(auth.status === "success"){
+            setAlert(<Alert type="success" message="Sign in success, navigate to dashboard in few second"/>);
+            setButtonSignInContent(<i className="fa-solid fa-circle-check fs-1" style={{color: "green"}}></i>);
+            setUserSessionLogin(auth.fullname, auth.email);
+            setIsNavigate(true);
+        } else if (auth.status === "error") {            
+            setAlert(<Alert type="danger" message="Sign in fail, email or password is not correct"/>);
+            setButtonSignInContent(<>SignIn</>);
+            setIsButtonSignInDisable(false);
+        }
+    }, [auth.status]);
+
+    function validateUserSignInForm(email_input:string, password_input:string):boolean {
+        if (email_input === "")
+            {setAlert(<Alert type="danger" message="Email is empty !"/>); return false; }
+        else if(password_input === "")
+            { setAlert(<Alert type="danger" message="Password is empty !"/>); return false; }
+        
+        return true;
+    }
+
+    function signInFormSubmitHandler(event: React.MouseEvent) {
+        event.preventDefault();
+
+        const user:authUser = {
+            email: userEmail,
+            password: userPassword
+        }
+
+        const isValid:boolean = validateUserSignInForm(userEmail, userPassword);
+
+        if(isValid) {
+            setAlert(<Alert type="warning" message="Loading"/>);
+            dispatch(userLoginValidate(user));
+        } else {
+            setButtonSignInContent(<>SignIn</>);
+            setIsButtonSignInDisable(false);
+        }
+    }
+
     return ( 
         <div className="sign-in">
             <div className="container text-center">
                 <h3 className="fw-bold">Welcome Back!</h3>
                 <img className="w-100 mt-5" src="/images/sign-in-user.png" alt="/images/sign-in-user.png" style={{maxWidth: "20rem"}}/>
                 <form className="mt-5" id="sign-in-form">
+                    {alert}
                     <h5 className="text-start ms-3">Email:</h5>
                     <div className="form-floating mb-3">
-                        <input type="email" className="form-control ps-4" id="email-user-input-sign-in" placeholder="example@email.com"/>
+                        <input type="email" className="form-control ps-4" id="email-user-input-sign-in" placeholder="example@email.com" onChange={e => getUserEmail(e.target.value)}/>
                         <label htmlFor="email-user-input-sign-in" className="w-100"><i className="fa-solid fa-envelope mx-3"></i>Enter Your Email</label>
                     </div>
 
                     <h5 className="text-start ms-3">Password:</h5>
                     <div className="form-floating mb-3">
-                        <input type="password" className="form-control ps-4" id="password-user-input-sign-in" placeholder="password"/>
+                        <input type="password" className="form-control ps-4" id="password-user-input-sign-in" placeholder="password" onChange={e => getUserPassword(e.target.value)}/>
                         <label htmlFor="password-user-input-sign-in" className="w-100"><i className="fa-solid fa-lock mx-3"></i>Enter Your Password</label>
                     </div>
                     <Link to="/forget-password/*" className="text-decoration-none fw-bold mt-3" style={{color: "#F700C4"}}>Forget Password?</Link>
-                    <button type="submit" form="sign-in-form" className="btn custom-btn-1 w-100 py-3 mt-3">SignIn</button>
+                    <button type="submit" form="sign-in-form" className="btn custom-btn-1 w-100 py-3 mt-3" disabled={isButtonSignInDisable} onClick={signInFormSubmitHandler}>{buttonSignInContent}</button>
                     <p className="mt-3">Don't have an Account ? <Link to="/sign-up/" style={{color: "#F700C4"}}>SignUp</Link></p>
                 </form>
             </div>

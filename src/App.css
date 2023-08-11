@@ -6,8 +6,18 @@ form input {
   border-radius: 25px !important;
 }
 
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active,
+input:-internal-autofill-selected,
+input:-internal-autofill-previewed {
+    background-color: white !important;
+    -webkit-box-shadow: 0 0 0 30px white inset !important;
+}
+
 .App {
-  padding: 10% 25% 0%;
+  padding: 10% 4% 0%;
 }
 
 .custom-btn-1 {
@@ -24,3 +34,66 @@ form input {
   border-color: transparent !important;
 }
 
+.user-welcome-background {
+  background-color: #ecd3d5;
+  position: absolute;
+  z-index: -2;
+  top: 0;
+  width: 100%;
+  left: 0;
+  height: 45vh;
+}
+
+.user-welcome img {
+  width: 8rem;
+  height: 8rem;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.todo-list-area {
+  background-color: white;
+  border: solid 2px black;
+  box-shadow: rgba(0, 0, 0, 0.67) 0px 13px 33px -8px;
+  border-radius: 25px;
+}
+
+.todo-list-area .form-check-input {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.todo-list-area .form-check-input:checked {
+  background-color: #F700C4;
+  border-color: #F700C4;
+}
+
+@media (min-width: 768px) {
+  .user-welcome-background {
+    height: 50vh;
+  }
+
+  .App {
+    padding: 10% 15% 0%;
+  }
+}
+
+@media (min-width: 992px) {
+  .user-welcome-background {
+    height: 55vh;
+  }
+
+  .App {
+    padding: 10% 20% 0%;
+  }
+}
+
+@media (min-width: 1200px) {
+  .user-welcome-background {
+    height: 60vh;
+  }
+
+  .App {
+    padding: 10% 25% 0%;
+  }
+}
