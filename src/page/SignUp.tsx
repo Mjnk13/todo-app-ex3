@@ -4,7 +4,7 @@ import { addUserToDb } from "../indexeddb/dbUserActions";
 import { useSelector, useDispatch } from "react-redux";
 import { setUserSessionLogin } from "../sessionStorage/sessionStorageAction";
 import Alert from "./component/Alert";
-import { setSignUpProcessDone, setStatus } from "../app/authSlice";
+import { setSignUpProcessDone, setStatusSignUp } from "../app/authSlice";
 
 const SignUp = () => {
     interface authUser {
@@ -35,30 +35,30 @@ const SignUp = () => {
 
     useEffect(() => {
         if(isNavigate) {
-            setTimeout(() => { dispatch(setStatus("redirect")); }, 3000);
+            setTimeout(() => { dispatch(setStatusSignUp("redirect")); }, 3000);
         }
     }, [isNavigate]);
 
     useEffect(() => {
-        if ((userLogged.logIn && !auth.status)){
+        if ((userLogged.logIn && !auth.statusSignUp)){
             navigate("../logged-in-redirect");
-        } else if(auth.status === "redirect"){
+        } else if(auth.statusSignUp === "redirect"){
             navigate("../dash-board");
             dispatch(setSignUpProcessDone("done"));
-            dispatch(setStatus("finish"));
-        } else if(auth.status === "success"){
+            dispatch(setStatusSignUp("finish"));
+        } else if(auth.statusSignUp === "success"){
             setAlert(<Alert type="success" message="Sign up success, navigate to dashboard in few second"/>);
             setButtonSignUpContent(<i className="fa-solid fa-circle-check fs-1" style={{color: "green"}}></i>);
             
             setUserSessionLogin(auth.id, auth.fullname, auth.email);
             setIsNavigate(true);
-        } else if (auth.status === "error") {            
+        } else if (auth.statusSignUp === "error") {            
             setAlert(<Alert type="danger" message="Sign up fail, email already existed"/>);
             setButtonSignUpContent(<>SignUp</>);
             setIsButtonSignUpDisable(false);
         }
             
-    },[auth.status]);
+    },[auth.statusSignUp]);
 
     function validateUserSignUpForm(fullname_input: string, email_input:string, password_input:string, confirm_password_input:string):boolean {
         if (fullname_input === "")

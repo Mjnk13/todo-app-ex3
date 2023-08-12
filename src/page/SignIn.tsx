@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAutUserSelector, useAuthUserDispatch } from "../app/hook";
 import { userLoginValidate } from "../indexeddb/dbUserActions";
 import Alert from "./component/Alert";
-import { setSignInProcessDone, setStatus } from "../app/authSlice";
+import { setSignInProcessDone, setStatusSignIn } from "../app/authSlice";
 import { setUserSessionLogin } from "../sessionStorage/sessionStorageAction";
 
 const SignIn = () => {
@@ -20,7 +20,7 @@ const SignIn = () => {
     const [ userEmail, getUserEmail ] = useState ("");
     const [ userPassword, getUserPassword ] = useState ("");
     const [ isButtonSignInDisable, setIsButtonSignInDisable ] = useState(false);
-    const [ buttonSignInContent, setButtonSignInContent ] = useState (<>SignUp</>);
+    const [ buttonSignInContent, setButtonSignInContent ] = useState (<>SignIn</>);
     const [ alert, setAlert ] = useState(<></>);
     const [ isNavigate, setIsNavigate ] = useState(false);
 
@@ -31,32 +31,32 @@ const SignIn = () => {
 
     useEffect(() => {
         if(isNavigate) {
-            setTimeout(() => { dispatch(setStatus("redirect")); }, 3000);
+            setTimeout(() => { dispatch(setStatusSignIn("redirect")); }, 3000);
         }
     }, [isNavigate]);
 
     useEffect(() => {
-        if ((userLogged.logIn && !auth.status)){
+        if ((userLogged.logIn && !auth.statusSignIn)){
             navigate("../logged-in-redirect");
-        } else if(auth.status === "redirect"){
+        } else if(auth.statusSignIn === "redirect"){
             navigate("../dash-board");
             dispatch(setSignInProcessDone("done"));
-            dispatch(setStatus("finish"));
-        } else if(auth.status === "success"){
+            dispatch(setStatusSignIn("finish"));
+        } else if(auth.statusSignIn === "success"){
             setAlert(<Alert type="success" message="Sign in success, navigate to dashboard in few second"/>);
             setButtonSignInContent(<i className="fa-solid fa-circle-check fs-1" style={{color: "green"}}></i>);
             setUserSessionLogin(auth.id, auth.fullname, auth.email);
             setIsNavigate(true);
-        } else if (auth.status === "error") {            
+        } else if (auth.statusSignIn === "error") {            
             setAlert(<Alert type="danger" message="Sign in fail, email or password is not correct"/>);
             setButtonSignInContent(<>SignIn</>);
             setIsButtonSignInDisable(false);
         }
-    }, [auth.status]);
+    }, [auth.statusSignIn]);
 
     function validateUserSignInForm(email_input:string, password_input:string):boolean {
         if (email_input === "")
-            {setAlert(<Alert type="danger" message="Email is empty !"/>); return false; }
+            { setAlert(<Alert type="danger" message="Email is empty !"/>); return false; }
         else if(password_input === "")
             { setAlert(<Alert type="danger" message="Password is empty !"/>); return false; }
         
@@ -65,6 +65,11 @@ const SignIn = () => {
 
     function signInFormSubmitHandler(event: React.MouseEvent) {
         event.preventDefault();
+        setIsButtonSignInDisable(true);
+
+        setButtonSignInContent(<div className="spinner-border text-primary" role="status">
+                                    <span className="visually-hidden">Loading...</span>
+                                </div>);
 
         const user:authUser = {
             email: userEmail,

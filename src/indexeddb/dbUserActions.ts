@@ -20,14 +20,12 @@ export const userLoginValidate = createAsyncThunk('user/login-validate', async (
             const store = txn.objectStore('users');
             const indexMail = store.index('email');
 
-            let query = indexMail.get(user.email);
+            let query = indexMail.get([user.email]);
 
             query.onerror = () => reject({result: false, user: user});
-            query.onsuccess = (e) => {
-                console.log(e.target);
-                
-                if (query.result.password === user.password) {
-                    let queryKey = indexMail.getKey(user.email);
+            query.onsuccess = (e) => {  
+                if (query.result && query.result.password === user.password) {
+                    let queryKey = indexMail.getKey([user.email]);
                     queryKey.onerror = () => reject({result: false, user: user});
                     queryKey.onsuccess = () => {
                         let queryResult = query.result;

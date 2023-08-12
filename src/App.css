@@ -72,6 +72,15 @@ input:-internal-autofill-previewed {
   border-color: #F700C4;
 }
 
+.dashboard .modal .modal-body .form-floating>.form-control~label {
+  transform: none;
+}
+
+.dashboard .modal .modal-body .form-floating>.form-control:focus~label, 
+.dashboard .modal .modal-body .form-floating>.form-control:not(:placeholder-shown)~label {
+  transform: scale(.85) translateY(-0.5rem) translateX(2rem);
+}
+
 @media (min-width: 576px) {
   .dashboard .modal-dialog {
     width: 50%;

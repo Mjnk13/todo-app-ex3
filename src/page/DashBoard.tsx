@@ -1,26 +1,92 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import Alert from "./component/Alert";
+import { useDispatch, useSelector } from "react-redux";
+import { addTodoTask, getAllTodoTasksByUserId } from "../indexeddb/dbTodoActions";
+import TodoList from "./component/TodoList";
 
 const DashBoard = () => {
+    const dispatch = useDispatch();
     const navigate = useNavigate();
     const userLogged = JSON.parse(sessionStorage.getItem("user-login") as string);
+    const todoState = useSelector((state:any) => state.todo);
+
     const [ newTaskInput, getNewTaskInput ] = useState("");
     const [ isButtonAddTodoTaskDisable, setIsButtonAddTodoTaskDisable ] = useState(false);
     const [ buttonAddTodoTaskContent, setButtonAddTodoTaskContent ] = useState (<>Add</>);
+    const [ alert, setAlert ] = useState(<></>);
+    const [isAlertClear, setIsAlertClear] = useState(true);
+
+    interface todoTask {
+        id?: number
+        userId: number,
+        content: string,
+        done: boolean 
+    }
 
     useEffect(() => {
         if(!userLogged.logIn) {
             navigate("../logged-in-redirect");   
+        } else {
+            dispatch(getAllTodoTasksByUserId(userLogged.userId) as any);
         }
     }, []);
+
+    useEffect(() => {
+        const t = setTimeout(() => {
+            if(!isAlertClear) {
+                setAlert(<></>);
+                setIsAlertClear(true);
+            }
+        }, 3000);
+      
+        return () => {
+            clearTimeout(t)
+        }
+    }, [alert])
+
+    useEffect(() => {
+        if(todoState.status === "success") {
+            if (todoState.for === "add task") {
+                getNewTaskInput("");
+                setButtonAddTodoTaskContent(<>Add</>);
+                setIsButtonAddTodoTaskDisable(false);
+                setAlert(<Alert type="success" message="Add new task successfully"/>);
+                setIsAlertClear(false);
+            }
+        } else if (todoState.status === "error") {
+            if (todoState.for === "add task") {
+                setButtonAddTodoTaskContent(<>Add</>);
+                setIsButtonAddTodoTaskDisable(false);
+                setAlert(<Alert type="danger" message="Something went wrong, can't not add new task"/>);
+                setIsAlertClear(false);
+            }
+        }
+    }, [todoState.status])
 
     function addTasBtnHandle (event: React.MouseEvent) {
         event.preventDefault();
         setIsButtonAddTodoTaskDisable(true);
 
-        setButtonAddTodoTaskContent(<div className="spinner-border text-primary" role="status">
+        if (!newTaskInput) {
+            setIsButtonAddTodoTaskDisable(false);
+            setButtonAddTodoTaskContent(<>Add</>);
+            setAlert(<Alert type="danger" message="can not add empty task"/>);
+            setIsAlertClear(false);
+        }
+        else {
+            setButtonAddTodoTaskContent(<div className="spinner-border text-primary" role="status">
                                     <span className="visually-hidden">Loading...</span>
                                 </div>);
+
+            const newToDoTask:todoTask = {
+                userId: userLogged.userId,
+                content: newTaskInput,
+                done: false
+            }
+            
+            dispatch(addTodoTask(newToDoTask) as any);
+        }
     }
 
     return ( 
@@ -28,6 +94,9 @@ const DashBoard = () => {
             {/* Modal */}
             <div className="modal fade" id="addTodoTaskModal" tabIndex={-1} aria-labelledby="addTodoTaskModalLabel" aria-hidden="true">
                 <div className="modal-dialog modal-dialog-centered align-items-center">
+                <div className="position-absolute start-50 translate-middle" style={{zIndex: 1, top: "25%"}}>
+                    {alert}
+                </div>
                     <div className="modal-content">
                         <div className="modal-header align-self-center">
                             <h1 className="modal-title fs-5" id="exampleModalLabel">Enter Task!</h1>
@@ -35,11 +104,11 @@ const DashBoard = () => {
                         </div>
                         <div className="modal-body">
                             <div className="form-floating mb-3">
-                                <input type="text" className="form-control ps-4" id="new-task-input" placeholder="full name" onChange={e => getNewTaskInput(e.target.value)}/>
-                                <label htmlFor="new-task-input" className="w-100"><i className="fa-solid fa-clipboard-list mx-3"></i>Task</label>
+                                <input type="text" className="form-control ps-4 text-center" id="new-task-input" placeholder="full name" value={newTaskInput} onChange={e => getNewTaskInput(e.target.value)}/>
+                                <label htmlFor="new-task-input" className="w-100 text-center"><i className="fa-solid fa-clipboard-list mx-3"></i>Task</label>
                             </div>
                         </div>
-                        <div className="modal-footer justify-content-between">
+                        <div className="modal-footer justify-content-around">
                             <button type="button" className="btn custom-btn-1" onClick={addTasBtnHandle} disabled={isButtonAddTodoTaskDisable}>{buttonAddTodoTaskContent}</button>
                             <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                         </div>
@@ -63,9 +132,7 @@ const DashBoard = () => {
                     <p className="m-0 fs-5">Daily Tasks</p>
                     <button type="button" className="btn fs-5" data-bs-toggle="modal" data-bs-target="#addTodoTaskModal"><i className="fa-solid fa-circle-plus" style={{color: "#F700C4"}}></i></button>
                 </div>
-                <div className="todo-list">
-                    
-                </div>
+                {todoState.data && <TodoList todoTaskList={todoState.data} ></TodoList> }
             </div>
         </div>
     );

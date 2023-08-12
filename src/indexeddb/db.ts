@@ -28,10 +28,10 @@ export default function db () {
             //run once
             request.onupgradeneeded = () => {
                 db = request.result;
-                let usersStore = db.createObjectStore('users', { autoIncrement: true });
-                let todoTasksStore = db.createObjectStore('todoTasks', { autoIncrement: true });
-                keys.user.forEach((key) => usersStore.createIndex(key.name, key.name, { unique: key.unique }));
-                keys.todoTask.forEach((key) => todoTasksStore.createIndex(key.name, key.name, { unique: key.unique }));
+                let usersStore = db.createObjectStore('users', { keyPath: "id", autoIncrement: true });
+                let todoTasksStore = db.createObjectStore('todoTasks', { keyPath: "id",autoIncrement: true });
+                keys.user.forEach((key) => usersStore.createIndex(key.name, [ key.name ], { unique: key.unique }));
+                keys.todoTask.forEach((key) => todoTasksStore.createIndex(key.name, [ key.name ], { unique: key.unique }));
             };
         });
     };
