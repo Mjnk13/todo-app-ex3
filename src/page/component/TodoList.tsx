@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { updateTodoTaskDone } from "../../indexeddb/dbTodoActions";
+import { deleteTodoTaskById, updateTodoTaskDone } from "../../indexeddb/dbTodoActions";
 
 type todoTask = {
     id: number
@@ -33,6 +33,12 @@ const TodoList = (props: props) => {
         dispatch(updateTodoTaskDone(taskId) as any);
     }
 
+    function todoTaskDeleteOnClickHandle(event: React.MouseEvent, taskId: number) {
+        event.preventDefault();
+
+        dispatch(deleteTodoTaskById(taskId) as any);
+    }
+
     return (
         <div className="todo-list">
             {props.todoTaskList.map((todo:todoTask, index:number) => (
@@ -44,12 +50,12 @@ const TodoList = (props: props) => {
                         <p className="ps-2 mb-0">{todo.content}</p>
                     </div>
                     <div className="col-sm-1 col-2 p-0 text-center">
-                        <button type="button" className="btn p-0 text-danger border-0" todo-id={todo.id} style={{height: "28px"}}><i className="fa-solid fa-circle-minus fs-3"></i></button>
+                        <button type="button" className="btn p-0 text-danger border-0" style={{height: "28px"}} onClick={(e) => { todoTaskDeleteOnClickHandle(e, todo.id) }}><i className="fa-solid fa-circle-minus fs-3"></i></button>
                     </div>
                 </div>
             ))}
         </div>
     );
 }
- 
+
 export default TodoList;

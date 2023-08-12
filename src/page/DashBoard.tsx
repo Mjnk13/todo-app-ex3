@@ -14,8 +14,10 @@ const DashBoard = () => {
     const [ newTaskInput, getNewTaskInput ] = useState("");
     const [ isButtonAddTodoTaskDisable, setIsButtonAddTodoTaskDisable ] = useState(false);
     const [ buttonAddTodoTaskContent, setButtonAddTodoTaskContent ] = useState (<>Add</>);
-    const [ alert, setAlert ] = useState(<></>);
-    const [isAlertClear, setIsAlertClear] = useState(true);
+    const [ alertDashBoard, setAlertDashBoard ] = useState(<></>);
+    const [ alertModal, setAlertModal ] = useState(<></>);
+    const [isAlertModalClear, setIsAlertModalClear] = useState(true);
+    const [isAlertDashboardClear, setIsAlertDashboardClear] = useState(true);
 
     interface todoTask {
         id?: number
@@ -34,16 +36,29 @@ const DashBoard = () => {
 
     useEffect(() => {
         const t = setTimeout(() => {
-            if(!isAlertClear) {
-                setAlert(<></>);
-                setIsAlertClear(true);
+            if(!isAlertModalClear) {
+                setAlertModal(<></>);
+                setIsAlertModalClear(true);
             }
         }, 3000);
       
         return () => {
             clearTimeout(t)
         }
-    }, [alert])
+    }, [alertModal])
+
+    useEffect(() => {
+        const t = setTimeout(() => {
+            if(!isAlertDashboardClear) {
+                setAlertModal(<></>);
+                setIsAlertDashboardClear(true);
+            }
+        }, 3000);
+      
+        return () => {
+            clearTimeout(t)
+        }
+    }, [alertDashBoard])
 
     useEffect(() => {
         if(todoState.status === "success") {
@@ -51,28 +66,41 @@ const DashBoard = () => {
                 getNewTaskInput("");
                 setButtonAddTodoTaskContent(<>Add</>);
                 setIsButtonAddTodoTaskDisable(false);
-                setAlert(<Alert type="success" message="Add new task successfully"/>);
-                setIsAlertClear(false);
+                setAlertModal(<Alert type="success" message="Add new task successfully"/>);
+                setIsAlertModalClear(false);
+            } else if (todoState.for === "update task is done by task id") {
+                setAlertDashBoard(<Alert type="success" message="Update task done successfully"/>);
+                setIsAlertDashboardClear(false);
+            } else if (todoState.for === "delete task is done by task id") {
+                setAlertDashBoard(<Alert type="success" message="Delete task successfully"/>);
+                setIsAlertDashboardClear(false);
             }
+
         } else if (todoState.status === "error") {
             if (todoState.for === "add task") {
                 setButtonAddTodoTaskContent(<>Add</>);
                 setIsButtonAddTodoTaskDisable(false);
-                setAlert(<Alert type="danger" message="Something went wrong, can't not add new task"/>);
-                setIsAlertClear(false);
+                setAlertModal(<Alert type="danger" message="Something went wrong, can't not add new task"/>);
+                setIsAlertModalClear(false);
+            } else if (todoState.for === "update task is done by task id") {
+                setAlertDashBoard(<Alert type="danger" message="Something went wrong, can't not update task done"/>);
+                setIsAlertDashboardClear(false);
+            } else if (todoState.for === "delete task is done by task id") {
+                setAlertDashBoard(<Alert type="danger" message="Something went wrong, can't not delete task"/>);
+                setIsAlertDashboardClear(false);
             }
         }
     }, [todoState.status])
 
-    function addTasBtnHandle (event: React.MouseEvent) {
+    function addTaskBtnHandle (event: React.MouseEvent) {
         event.preventDefault();
         setIsButtonAddTodoTaskDisable(true);
 
         if (!newTaskInput) {
             setIsButtonAddTodoTaskDisable(false);
             setButtonAddTodoTaskContent(<>Add</>);
-            setAlert(<Alert type="danger" message="can not add empty task"/>);
-            setIsAlertClear(false);
+            setAlertModal(<Alert type="danger" message="can not add empty task"/>);
+            setIsAlertModalClear(false);
         }
         else {
             setButtonAddTodoTaskContent(<div className="spinner-border text-primary" role="status">
@@ -94,8 +122,8 @@ const DashBoard = () => {
             {/* Modal */}
             <div className="modal fade" id="addTodoTaskModal" tabIndex={-1} aria-labelledby="addTodoTaskModalLabel" aria-hidden="true">
                 <div className="modal-dialog modal-dialog-centered align-items-center">
-                <div className="position-absolute start-50 translate-middle" style={{zIndex: 1, top: "25%"}}>
-                    {alert}
+                <div className="position-absolute start-50 translate-middle w-100 text-center" style={{zIndex: 1, top: "25%"}}>
+                    {alertModal}
                 </div>
                     <div className="modal-content">
                         <div className="modal-header align-self-center">
@@ -109,7 +137,7 @@ const DashBoard = () => {
                             </div>
                         </div>
                         <div className="modal-footer justify-content-around">
-                            <button type="button" className="btn custom-btn-1" onClick={addTasBtnHandle} disabled={isButtonAddTodoTaskDisable}>{buttonAddTodoTaskContent}</button>
+                            <button type="button" className="btn custom-btn-1" onClick={addTaskBtnHandle} disabled={isButtonAddTodoTaskDisable}>{buttonAddTodoTaskContent}</button>
                             <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                         </div>
                     </div>
@@ -127,7 +155,10 @@ const DashBoard = () => {
                 <img src="/images/clock.png" alt="clock" />
             </div>
             <h3 style={{color: "#610101"}}>Task List</h3>
-            <div className="todo-list-area my-3 py-4 px-4 px-sm-5">
+            <div className="todo-list-area my-3 py-4 px-4 px-sm-5 position-relative">
+                <div className="position-absolute start-50 top-0 translate-middle text-center" style={{zIndex: 1 }}>
+                        {alertDashBoard}
+                </div>
                 <div className="d-flex flex-wrap justify-content-between align-items-center">
                     <p className="m-0 fs-5">Daily Tasks</p>
                     <button type="button" className="btn fs-5" data-bs-toggle="modal" data-bs-target="#addTodoTaskModal"><i className="fa-solid fa-circle-plus" style={{color: "#F700C4"}}></i></button>

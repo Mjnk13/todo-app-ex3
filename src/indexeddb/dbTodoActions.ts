@@ -61,7 +61,7 @@ export const getAllTodoTasksByUserId = createAsyncThunk('todo-task/get-all-todo-
     });
 });
 
-export const updateTodoTaskDone = createAsyncThunk('todo-task', async (taskId: number) => {
+export const updateTodoTaskDone = createAsyncThunk('todo-task/update-todo-task-done-by-id', async (taskId: number) => {
     return new Promise<{ result: boolean, taskId: number }>((resolve, reject) => {        
         db().then((result) => {
             IDB = result as IDBDatabase ;
@@ -74,6 +74,26 @@ export const updateTodoTaskDone = createAsyncThunk('todo-task', async (taskId: n
                 updateData.done = !updateData.done;
 
                 const requestUpdate = cursor.update(updateData);
+                requestUpdate.onerror = () => { reject({ result: false, taskId: taskId}); }
+                requestUpdate.onsuccess = () => { resolve({result: true, taskId: taskId }); }
+            }
+            
+            txn.oncomplete = () => IDB.close();
+        });
+    });
+});
+
+export const deleteTodoTaskById = createAsyncThunk('todo-task/delete-todo-task-done-by-id', async (taskId: number) => {
+    return new Promise<{ result: boolean, taskId: number }>((resolve, reject) => {        
+        db().then((result) => {
+            IDB = result as IDBDatabase ;
+            const txn = IDB.transaction('todoTasks', 'readwrite');
+            const store = txn.objectStore('todoTasks');
+            store.openCursor(taskId).onerror = () => { reject({ result: false, taskId: taskId}); }
+            store.openCursor(taskId).onsuccess = (event: any) => {
+                const cursor = event.target.result;
+
+                const requestUpdate = cursor.delete();
                 requestUpdate.onerror = () => { reject({ result: false, taskId: taskId}); }
                 requestUpdate.onsuccess = () => { resolve({result: true, taskId: taskId }); }
             }
